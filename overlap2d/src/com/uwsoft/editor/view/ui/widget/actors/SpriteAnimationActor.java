@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.uwsoft.editor.renderer.resources.IResourceRetriever;
 
+import javax.xml.soap.Text;
+
 /**
  * Created by CyberJoe on 6/18/2015.
  */
@@ -14,7 +16,7 @@ public class SpriteAnimationActor extends Actor {
     private String animationName;
     private IResourceRetriever rm;
 
-    private Animation animation;
+    private Animation<TextureRegion> animation;
 
     private float stateTime = 0;
     private int fps;

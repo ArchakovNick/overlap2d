@@ -31,9 +31,8 @@ import com.uwsoft.editor.utils.poly.TextureUtils;
  */
 public class Tracer {
 	public static Vector2[][] trace(Texture texture, float hullTolerance, int alphaTolerance, boolean multiPartDetection, boolean holeDetection) {
-		Blending blending = Pixmap.getBlending();
-		Pixmap.setBlending(Blending.None);
 		Pixmap pixmap = TextureUtils.getPOTPixmap(texture);
+		pixmap.setBlending(Blending.None);
 
 		int w = pixmap.getWidth();
 		int h = pixmap.getHeight();
@@ -49,7 +48,6 @@ public class Tracer {
 		}
 
 		pixmap.dispose();
-		Pixmap.setBlending(blending);
 
 		Array<Array<Vector2>> outlines;
 		try {
