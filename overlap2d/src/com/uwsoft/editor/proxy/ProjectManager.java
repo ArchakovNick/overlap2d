@@ -24,6 +24,7 @@ import com.badlogic.gdx.tools.texturepacker.TexturePacker;
 import com.badlogic.gdx.tools.texturepacker.TexturePacker.Settings;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.google.common.collect.Lists;
 import com.kotcrab.vis.ui.util.dialog.DialogUtils;
 import com.puremvc.patterns.proxy.BaseProxy;
@@ -202,7 +203,7 @@ public class ProjectManager extends BaseProxy {
         File prjFile = new File(prjFilePath);
         if (prjFile.exists() && !prjFile.isDirectory()) {
             FileHandle projectFile = Gdx.files.internal(prjFilePath);
-            String projectContents = null;
+            String projectContents;
             try {
                 projectContents = FileUtils.readFileToString(projectFile.file());
                 Json json = new Json();
@@ -213,8 +214,7 @@ public class ProjectManager extends BaseProxy {
                 String prjInfoFilePath = projectPath + "/project.dt";
                 FileHandle projectInfoFile = Gdx.files.internal(prjInfoFilePath);
                 String projectInfoContents = FileUtils.readFileToString(projectInfoFile.file());
-                ProjectInfoVO voInfo = json.fromJson(ProjectInfoVO.class, projectInfoContents);
-                currentProjectInfoVO = voInfo;
+                currentProjectInfoVO = json.fromJson(ProjectInfoVO.class, projectInfoContents);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -289,9 +289,9 @@ public class ProjectManager extends BaseProxy {
 
 
     private ArrayList<File> getScmlFileImagesList(FileHandle fileHandle) {
-        ArrayList<File> images = new ArrayList<File>();
+        ArrayList<File> images = new ArrayList<>();
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = null;
+        DocumentBuilder db;
         try {
             db = dbf.newDocumentBuilder();
             org.w3c.dom.Document document = db.parse(fileHandle.file());
@@ -402,6 +402,7 @@ public class ProjectManager extends BaseProxy {
     }
 
 
+    //
     public void importSpriteAnimationsIntoProject(final Array<FileHandle> fileHandles, ProgressHandler progressHandler) {
         if (fileHandles == null) {
             return;
@@ -431,16 +432,20 @@ public class ProjectManager extends BaseProxy {
                     noFileNameWithoutFrame = true;
                 }
 
-                String targetPath = currentProjectPath + "/assets/orig/sprite-animations" + File.separator + fileNameWithoutFrame;
+
+                String targetPath = currentProjectPath + File.separator + SPRITE_DIR_PATH + File.separator + fileNameWithoutFrame;
+                String tmpPath = currentProjectPath + File.separator + SPRITE_DIR_PATH + File.separator + Long.toString(TimeUtils.millis());
+                //String targetPath = currentProjectPath + "/assets/orig/sprite-animations" + File.separator + fileNameWithoutFrame;
+
 
                 for (FileHandle file : fileHandles) {
                     File src = file.file();
 
                     String destName;
                     if (noFileNameWithoutFrame) {
-                        destName = targetPath + File.separator + fileNameWithoutFrame + src.getName();
+                        destName = tmpPath + File.separator + fileNameWithoutFrame + src.getName();
                     } else {
-                        destName = targetPath + File.separator + src.getName();
+                        destName = tmpPath + File.separator + src.getName();
                     }
 
                     File dest = new File(destName);
@@ -451,13 +456,13 @@ public class ProjectManager extends BaseProxy {
                     }
                 }
 
-                FileHandle pngsDir = new FileHandle(targetPath);
+                FileHandle pngsDir = new FileHandle(tmpPath);
                 for (FileHandle entry : pngsDir.list(Overlap2DUtils.PNG_FILTER)) {
                     texturePacker.addImage(entry.file());
                 }
 
-                String packName = "Pack";
-                targetPath = targetPath + packName;
+                //String packName = "Pack";
+                //targetPath = targetPath + packName;
 
                 File targetDir = new File(targetPath);
                 if (targetDir.exists()) {
@@ -468,7 +473,7 @@ public class ProjectManager extends BaseProxy {
                     }
                 }
 
-                texturePacker.pack(targetDir, fileNameWithoutFrame + packName);
+                texturePacker.pack(targetDir, fileNameWithoutFrame);
 
                 //delete newly created directory and images
                 try {
@@ -477,7 +482,7 @@ public class ProjectManager extends BaseProxy {
                     e.printStackTrace();
                 }
 
-                newAnimName = fileNameWithoutFrame + packName;
+                newAnimName = fileNameWithoutFrame;
             } else {
                 for (FileHandle fileHandle : fileHandles) {
                     try {

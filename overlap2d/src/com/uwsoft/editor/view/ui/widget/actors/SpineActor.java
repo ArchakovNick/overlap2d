@@ -16,6 +16,7 @@ public class SpineActor extends Actor {
     private String animationName;
     public SkeletonData skeletonData;
     private SkeletonRenderer renderer;
+    private SkeletonMeshRenderer meshRenderer;
     private Skeleton skeleton;
     private AnimationState state;
     private IResourceRetriever irr;
@@ -27,6 +28,7 @@ public class SpineActor extends Actor {
     public SpineActor(String animationName, IResourceRetriever irr) {
         this.irr = irr;
         this.renderer = new SkeletonRenderer();
+        this.meshRenderer = new SkeletonMeshRenderer();
         this.animationName = animationName;
         initSkeletonData();
         initSpine();
@@ -107,7 +109,13 @@ public class SpineActor extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        renderer.draw((PolygonSpriteBatch)batch, skeleton);
+        if (!isMeshAttachment(skeleton)) {
+            renderer.setPremultipliedAlpha(false);
+            renderer.draw(batch, skeleton);
+        } else {
+            meshRenderer.setPremultipliedAlpha(false);
+            meshRenderer.draw((PolygonSpriteBatch) batch, skeleton);
+        }
         super.draw(batch, parentAlpha);
     }
 
@@ -118,5 +126,20 @@ public class SpineActor extends Actor {
         state.apply(skeleton);
         skeleton.setPosition(getX() - minX, getY() - minY);
         super.act(delta);
+    }
+
+    private boolean isMeshAttachment(Skeleton skeleton) {
+        boolean result = false;
+
+        Array<Slot> slots = skeleton.getSlots();
+
+        for(Slot slot: slots) {
+            Attachment attachment = slot.getAttachment();
+            if (attachment instanceof MeshAttachment || attachment instanceof WeightedMeshAttachment) {
+                result = true;
+            }
+        }
+
+        return result;
     }
 }
